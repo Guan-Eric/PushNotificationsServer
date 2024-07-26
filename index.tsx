@@ -1,27 +1,21 @@
 import express from "express";
 import BodyParser from "body-parser";
-import * as FirebaseService from "./FirebaseService";
 import Expo from "expo-server-sdk";
 
 const app = express();
 const port = 8000;
-const address = "localhost";
+const address = "192.168.2.44";
 
 const expo = new Expo();
 
 const jsonParser = BodyParser.json();
 const httpParser = BodyParser.urlencoded({ extended: false });
 
-app.post("/registerPushToken", jsonParser, async (req, res) => {
-  try {
-    const userId = String(req.body.userId);
-    const token = String(req.body.token);
-    await FirebaseService.saveToken(userId, token);
-    res.status(200).send("success");
-  } catch (error) {
-    console.error("Error processing request:", error);
-    res.status(500).send("Internal Server Error");
-  }
+app.post(`/sendPushNotification`, jsonParser, async (req, res) => {
+  expo.sendPushNotificationsAsync([
+    { to: req.body.token, title: "Gym Pulse", body: req.body.body },
+  ]);
+  res.status(200).send("success");
 });
 
 app.listen(port, address, () =>
